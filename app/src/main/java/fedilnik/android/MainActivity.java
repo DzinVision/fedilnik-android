@@ -9,12 +9,21 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+
+import java.util.Calendar;
+import java.util.Date;
 
 import fedilnik.android.data.DataStore;
+import fedilnik.android.data.Preferences;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
+
     private ViewPager mainViewPager;
     private TabLayout tabLayout;
+
+    private boolean didSetCurrentDay = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,18 +42,68 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
+
+        setCurrentDay();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         DataStore.getInstance().loadData(this);
+
+        Date lastOpened = Preferences.getLastOpenedDate(this);
+        Preferences.setLastOpenedDate(new Date(), this);
+        if (lastOpened == null) {
+            setCurrentDay();
+            return;
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(lastOpened);
+        int lastOpenedDay = calendar.get(Calendar.DAY_OF_MONTH);
+        int lastOpenedMonth = calendar.get(Calendar.MONTH);
+        int lastOpenedYear = calendar.get(Calendar.YEAR);
+
+        calendar.setTime(new Date());
+        int currentDay = calendar.get(Calendar.DAY_OF_MONTH);
+        int currentMonth = calendar.get(Calendar.MONTH);
+        int currentYear = calendar.get(Calendar.YEAR);
+
+        if (!(lastOpenedDay == currentDay &&
+                lastOpenedMonth == currentMonth &&
+                lastOpenedYear == currentYear)) {
+            setCurrentDay();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         DataStore.getInstance().saveData(this);
+    }
+
+    private void setCurrentDay() {
+        Calendar calendar = Calendar.getInstance();
+        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+        switch (dayOfWeek) {
+            case Calendar.MONDAY:
+                mainViewPager.setCurrentItem(0);
+                break;
+            case Calendar.TUESDAY:
+                mainViewPager.setCurrentItem(1);
+                break;
+            case Calendar.WEDNESDAY:
+                mainViewPager.setCurrentItem(2);
+                break;
+            case Calendar.THURSDAY:
+                mainViewPager.setCurrentItem(3);
+                break;
+            case Calendar.FRIDAY:
+                mainViewPager.setCurrentItem(4);
+                break;
+            default:
+                mainViewPager.setCurrentItem(0);
+        }
     }
 }
 
