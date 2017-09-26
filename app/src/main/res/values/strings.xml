@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Fedilnik</string>
+    <string name="app_name" translatable="false">Fedilnik</string>
 
     <string name="monday">Monday</string>
     <string name="tuesday">Tuesday</string>
