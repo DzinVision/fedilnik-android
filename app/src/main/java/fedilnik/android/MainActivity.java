@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -22,8 +23,6 @@ public class MainActivity extends AppCompatActivity {
 
     private ViewPager mainViewPager;
     private TabLayout tabLayout;
-
-    private boolean didSetCurrentDay = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +40,12 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(mainViewPager);
 
         Toolbar toolbar = findViewById(R.id.main_toolbar);
+
+        DataStore dataStore = DataStore.getInstance();
+        dataStore.loadData(this);
+        String menuValidDate = dataStore.getValidDate();
+        toolbar.setTitle(menuValidDate);
+
         setSupportActionBar(toolbar);
 
         setCurrentDay();
