@@ -34,6 +34,7 @@ public class DataStore {
     private List<List<Meal>> data;
     private Date downloadedDate = null;
     private boolean loadedData = false;
+    private String validDate = "";
 
 
     private DataStore() {
@@ -56,6 +57,7 @@ public class DataStore {
             if (dataStoreHolder != null) {
                 downloadedDate = dataStoreHolder.downloadedDate;
                 data = dataStoreHolder.data;
+                validDate = dataStoreHolder.validDate;
             }
         } catch (JsonSyntaxException e) {
             Log.e(TAG, "Could not load data", e);
@@ -91,7 +93,7 @@ public class DataStore {
 
     public void saveData(Context context) {
         Gson gson = new Gson();
-        String json = gson.toJson(new DataStoreHolder(data, downloadedDate));
+        String json = gson.toJson(new DataStoreHolder(data, downloadedDate, validDate));
         FileUtils.writeToFile(FILE_NAME, json, context);
     }
 
@@ -112,7 +114,12 @@ public class DataStore {
                 try {
                     List<List<Meal>> newData = new ArrayList<>();
                     Document doc = Jsoup.connect(URL).maxBodySize(0).timeout(0).get();
-                    Elements days = doc.getElementsByTag("table");
+
+                    Element container = doc.getElementById("text-content-container");
+
+                    String date = container.child(1).child(0).html();
+                    Elements days = container.getElementsByTag("table");
+
                     for (Element day : days) {
                         List<Meal> meals = new ArrayList<>();
                         Element body = day.getElementsByTag("tbody").first();
@@ -137,6 +144,7 @@ public class DataStore {
 
                     data = newData;
                     downloadedDate = new Date();
+                    validDate = date;
                     downloadDataCallback(Status.SUCCESS);
                 } catch (IOException e) {
                     downloadDataCallback(Status.NETWORK_ERROR);
@@ -171,14 +179,21 @@ public class DataStore {
         if (data == null || day >= data.size()) return new ArrayList<>();
         return data.get(day);
     }
+
+    public String getValidDate() {
+        return validDate;
+    }
+
 }
 
 class DataStoreHolder {
     public List<List<Meal>> data;
     public Date downloadedDate;
+    public String validDate;
 
-    DataStoreHolder(List<List<Meal>> data, Date downloadedDate) {
+    DataStoreHolder(List<List<Meal>> data, Date downloadedDate, String validDate) {
         this.data = data;
         this.downloadedDate = downloadedDate;
+        this.validDate = validDate;
     }
 }
