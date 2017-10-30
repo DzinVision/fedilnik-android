@@ -9,18 +9,23 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 import fedilnik.android.data.DataStore;
+import fedilnik.android.data.DataStoreCallback;
 import fedilnik.android.data.Preferences;
+import fedilnik.android.data.Status;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DataStoreCallback {
     private static final String TAG = "MainActivity";
 
     private ViewPager mainViewPager;
     private TabLayout tabLayout;
+    private String dataDelegateUUID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,19 +45,25 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
 
-        DataStore dataStore = DataStore.getInstance();
-        dataStore.loadData(this);
-        String menuValidDate = dataStore.getValidDate();
-
-        getSupportActionBar().setSubtitle(menuValidDate);
-
         setCurrentDay();
+
+        dataDelegateUUID = UUID.randomUUID().toString();
+        DataStore.getInstance().addCallback(dataDelegateUUID, this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        DataStore.getInstance().removeCallback(dataDelegateUUID);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         DataStore.getInstance().loadData(this);
+
+        updateDateSubtitle();
 
         Date lastOpened = Preferences.getLastOpenedDate(this);
         Preferences.setLastOpenedDate(new Date(), this);
@@ -107,6 +118,21 @@ public class MainActivity extends AppCompatActivity {
             default:
                 mainViewPager.setCurrentItem(0);
         }
+    }
+
+    private void updateDateSubtitle() {
+        String menuValidDate = DataStore.getInstance().getValidDate();
+        getSupportActionBar().setSubtitle(menuValidDate);
+    }
+
+    @Override
+    public void dataDidChange(Status status) {
+        updateDateSubtitle();
+    }
+
+    @Override
+    public void dataDidStartRefreshing() {
+
     }
 }
 
