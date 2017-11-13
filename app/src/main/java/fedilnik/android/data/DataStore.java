@@ -113,11 +113,13 @@ public class DataStore {
             public void run() {
                 try {
                     List<List<Meal>> newData = new ArrayList<>();
+
                     Document doc = Jsoup.connect(URL).maxBodySize(0).timeout(0).get();
 
                     Element container = doc.getElementById("text-content-container");
 
-                    String date = container.child(1).child(0).html();
+                    String date = container.child(1).html().replaceAll("&nbsp;","");
+
                     Elements days = container.getElementsByTag("table");
 
                     for (Element day : days) {
@@ -146,6 +148,7 @@ public class DataStore {
                     downloadedDate = new Date();
                     validDate = date;
                     downloadDataCallback(Status.SUCCESS);
+
                 } catch (IOException e) {
                     downloadDataCallback(Status.NETWORK_ERROR);
                 }
