@@ -119,6 +119,7 @@ public class DataStore {
                     Element container = doc.getElementById("text-content-container");
 
                     String date = container.child(1).html().replaceAll("&nbsp;","");
+                    date = date.replaceAll("<[a-z/]+>", "");
 
                     Elements days = container.getElementsByTag("table");
 
