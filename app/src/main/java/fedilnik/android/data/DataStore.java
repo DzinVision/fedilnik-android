@@ -130,6 +130,8 @@ public class DataStore {
                         for (Element row : body.children()) {
                             Elements dataCells = row.children();
                             for (int i = 0; i < dataCells.size(); ++i) {
+                                if (dataCells.get(i).children().size() == 0) continue;
+
                                 String content = dataCells.get(i).child(0).html();
                                 content = URLDecoder.decode(content, "UTF-8");
                                 content = content.replaceAll("&nbsp;", "");
